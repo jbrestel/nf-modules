@@ -8,7 +8,7 @@ process TRIMMOMATIC {
         'biocontainers/trimmomatic:0.39--hdfd78af_2' }"
 
     input:
-    tuple val(meta), path(reads)
+    tuple val(meta), path(reads), path(phred)
 
     output:
     tuple val(meta), path("*.paired.trim*.fastq.gz")   , emit: trimmed_reads
@@ -30,8 +30,12 @@ process TRIMMOMATIC {
         : "${prefix}.paired.trim_1.fastq.gz ${prefix}.unpaired.trim_1.fastq.gz ${prefix}.paired.trim_2.fastq.gz ${prefix}.unpaired.trim_2.fastq.gz"
     def qual_trim = task.ext.args2 ?: ''
     """
+
+    phredVar=\$(cat $phred)
+
     trimmomatic \\
         $trimmed \\
+        -\$phredVar \\
         -threads $task.cpus \\
         -trimlog ${prefix}_trim.log \\
         -summary ${prefix}.summary \\
